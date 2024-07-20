@@ -1,5 +1,5 @@
 import { Artist, Tweet } from '@/types';
-import axios, { AxiosError } from 'axios';
+import axios from 'axios';
 
 const API_BASE_URL = 'https://jsonplaceholder.typicode.com';
 
