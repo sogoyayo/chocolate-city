@@ -11,7 +11,6 @@ const AlbumDetails = () => {
     const {
         data: AlbumPhotos,
         isLoading,
-        isError
     } = useAlbumPhotos(parseInt(id as string));
 
 

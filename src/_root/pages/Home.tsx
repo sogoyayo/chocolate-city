@@ -1,7 +1,6 @@
 // import { useToast } from "@/components/ui/use-toast";
 import { Loader, PostCard, UserCard } from "@/components/shared";
 import { useArtists, useTweets } from "@/lib/react-query/queries";
-import { Tweet } from "@/types";
 
 const Home = () => {
   // const { toast } = useToast();

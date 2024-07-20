@@ -15,7 +15,7 @@ import { SignupValidation } from "@/lib/validation";
 const SignupForm = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { data: currentUser, isLoading: isUserLoading } = useCurrentUser();
+  const { isLoading: isUserLoading } = useCurrentUser();
   const { mutateAsync: signup, isLoading: isSigningUp } = useSignup();
   const { mutateAsync: login, isLoading: isLoggingIn } = useLogin();
 

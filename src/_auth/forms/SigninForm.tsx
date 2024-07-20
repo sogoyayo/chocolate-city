@@ -15,7 +15,7 @@ import { useLogin, useCurrentUser } from "@/lib/react-query/queries";
 const SigninForm = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { data: currentUser, isLoading: isUserLoading } = useCurrentUser();
+  const { isLoading: isUserLoading } = useCurrentUser();
   const { mutateAsync: login, isLoading: isLoggingIn } = useLogin();
 
   const form = useForm<z.infer<typeof SigninValidation>>({
