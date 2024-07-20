@@ -17,66 +17,78 @@ import {
 } from "@/components/ui";
 import { PostValidation } from "@/lib/validation";
 import { useToast } from "@/components/ui/use-toast";
-import { useUserContext } from "@/context/AuthContext";
-import { FileUploader, Loader } from "@/components/shared";
-import { useCreatePost, useUpdatePost } from "@/lib/react-query/queries";
+import { Loader } from "@/components/shared";
+import { useCreateTweet, useCurrentUser, useUpdateTweet } from "@/lib/react-query/queries";
+import { Tweet } from "@/types";
+import { getFirstStringBeforeAt } from "@/lib/utils";
 
 type PostFormProps = {
-  post?: Models.Document;
+  post?: Tweet;
   action: "Create" | "Update";
 };
 
 const PostForm = ({ post, action }: PostFormProps) => {
+  const { data: currentUser } = useCurrentUser();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user } = useUserContext();
   const form = useForm<z.infer<typeof PostValidation>>({
     resolver: zodResolver(PostValidation),
     defaultValues: {
-      caption: post ? post?.caption : "",
-      file: [],
-      location: post ? post.location : "",
-      tags: post ? post.tags.join(",") : "",
+      body: post && action === "Update" ? post?.body : "",
+      postId: post && action === "Update" ? post.postId : 0,
+      name: post && action === "Update" ? post.name : getFirstStringBeforeAt(currentUser?.email || ""),
+      email: post && action === "Update" ? post.email : currentUser?.email || "",
     },
   });
 
   // Query
   const { mutateAsync: createPost, isLoading: isLoadingCreate } =
-    useCreatePost();
+  useCreateTweet();
   const { mutateAsync: updatePost, isLoading: isLoadingUpdate } =
-    useUpdatePost();
+  useUpdateTweet();
+
 
   // Handler
   const handleSubmit = async (value: z.infer<typeof PostValidation>) => {
-    // ACTION = UPDATE
-    if (post && action === "Update") {
-      const updatedPost = await updatePost({
-        ...value,
-        postId: post.$id,
-        imageId: post.imageId,
-        imageUrl: post.imageUrl,
-      });
-
-      if (!updatedPost) {
-        toast({
-          title: `${action} post failed. Please try again.`,
+    try {
+      // ACTION = UPDATE
+      if (post && action === "Update") {
+        const updatedPost = await updatePost({
+          tweetId: post.id,
+          tweet: {
+            ...value,
+          },
         });
+
+        if (!updatedPost) {
+          toast({
+            title: `${action} post failed. Please try again.`,
+          });
+        } else {
+          toast({ title: 'Post updated successfully' });
+          navigate(`/`);
+        }
+      } else {
+        // ACTION = CREATE
+        const newPost = await createPost({
+          ...value,
+        });
+
+        if (!newPost) {
+          toast({
+            title: `${action} post failed. Please try again.`,
+          });
+        } else {
+          toast({ title: 'Post created successfully' });
+          navigate("/");
+        }
       }
-      return navigate(`/posts/${post.$id}`);
-    }
-
-    // ACTION = CREATE
-    const newPost = await createPost({
-      ...value,
-      userId: user.id,
-    });
-
-    if (!newPost) {
+    } catch (error) {
       toast({
         title: `${action} post failed. Please try again.`,
       });
+      console.error("Error during post creation:", error);
     }
-    navigate("/");
   };
 
   return (
@@ -84,9 +96,50 @@ const PostForm = ({ post, action }: PostFormProps) => {
       <form
         onSubmit={form.handleSubmit(handleSubmit)}
         className="flex flex-col gap-9 w-full  max-w-5xl">
+
         <FormField
           control={form.control}
-          name="caption"
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="shad-form_label">Add Name</FormLabel>
+              <FormControl>
+                <Input type="text" className="shad-input" {...field} />
+              </FormControl>
+              <FormMessage className="shad-form_message" />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="shad-form_label">Add Email</FormLabel>
+              <FormControl>
+                <Input type="text" className="shad-input" {...field} />
+              </FormControl>
+              <FormMessage className="shad-form_message" />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="postId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="shad-form_label">Post ID</FormLabel>
+              <FormControl>
+                <Input type="number" className="shad-input" {...field} />
+              </FormControl>
+              <FormMessage className="shad-form_message" />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="body"
           render={({ field }) => (
             <FormItem>
               <FormLabel className="shad-form_label">Caption</FormLabel>
@@ -101,7 +154,7 @@ const PostForm = ({ post, action }: PostFormProps) => {
           )}
         />
 
-        <FormField
+        {/* <FormField
           control={form.control}
           name="file"
           render={({ field }) => (
@@ -116,9 +169,9 @@ const PostForm = ({ post, action }: PostFormProps) => {
               <FormMessage className="shad-form_message" />
             </FormItem>
           )}
-        />
+        /> */}
 
-        <FormField
+        {/* <FormField
           control={form.control}
           name="location"
           render={({ field }) => (
@@ -130,9 +183,9 @@ const PostForm = ({ post, action }: PostFormProps) => {
               <FormMessage className="shad-form_message" />
             </FormItem>
           )}
-        />
+        /> */}
 
-        <FormField
+        {/* <FormField
           control={form.control}
           name="tags"
           render={({ field }) => (
@@ -151,7 +204,7 @@ const PostForm = ({ post, action }: PostFormProps) => {
               <FormMessage className="shad-form_message" />
             </FormItem>
           )}
-        />
+        /> */}
 
         <div className="flex gap-4 items-center justify-end">
           <Button

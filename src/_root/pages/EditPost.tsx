@@ -2,11 +2,12 @@ import { useParams } from "react-router-dom";
 
 import { Loader } from "@/components/shared";
 import PostForm from "@/components/forms/PostForm";
-import { useGetPostById } from "@/lib/react-query/queries";
+import { useGetTweetById } from "@/lib/react-query/queries";
 
 const EditPost = () => {
-  const { id } = useParams();
-  const { data: post, isLoading } = useGetPostById(id);
+  const { id } = useParams<{ id: string }>();
+  const { data: post, isLoading } = useGetTweetById(id as string);
+
 
   if (isLoading)
     return (

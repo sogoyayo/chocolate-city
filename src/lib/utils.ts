@@ -53,6 +53,11 @@ export const multiFormatDateString = (timestamp: string = ""): string => {
   }
 };
 
-export const checkIsLiked = (likeList: string[], userId: string) => {
-  return likeList.includes(userId);
-};
+export function getFirstStringBeforeAt(email: string): string {
+  const atIndex = email.indexOf('@');
+  if (atIndex === -1) {
+    throw new Error('Invalid email address');
+  }
+  
+  return email.substring(0, atIndex);
+}

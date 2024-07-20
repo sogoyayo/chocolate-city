@@ -1,24 +1,23 @@
-import { Models } from "appwrite";
-
 // import { useToast } from "@/components/ui/use-toast";
 import { Loader, PostCard, UserCard } from "@/components/shared";
-import { useGetRecentPosts, useGetUsers } from "@/lib/react-query/queries";
+import { useArtists, useTweets } from "@/lib/react-query/queries";
+import { Tweet } from "@/types";
 
 const Home = () => {
   // const { toast } = useToast();
 
   const {
-    data: posts,
-    isLoading: isPostLoading,
-    isError: isErrorPosts,
-  } = useGetRecentPosts();
+    data: tweets,
+    isLoading: isTweetsLoading,
+    isError: isErrorTweets,
+  } = useTweets();
   const {
-    data: creators,
-    isLoading: isUserLoading,
-    isError: isErrorCreators,
-  } = useGetUsers(10);
+    data: users,
+    isLoading: isUsersLoading,
+    isError: isErrorUsers,
+  } = useArtists();
 
-  if (isErrorPosts || isErrorCreators) {
+  if (isErrorTweets || isErrorUsers) {
     return (
       <div className="flex flex-1">
         <div className="home-container">
@@ -36,13 +35,13 @@ const Home = () => {
       <div className="home-container">
         <div className="home-posts">
           <h2 className="h3-bold md:h2-bold text-left w-full">Home Feed</h2>
-          {isPostLoading && !posts ? (
+          {isTweetsLoading && !tweets ? (
             <Loader />
           ) : (
             <ul className="flex flex-col flex-1 gap-9 w-full ">
-              {posts?.documents.map((post: Models.Document) => (
-                <li key={post.$id} className="flex justify-center w-full">
-                  <PostCard post={post} />
+              {tweets?.map((tweet) => (
+                <li key={tweet.id} className="flex justify-center w-full">
+                  <PostCard tweet={tweet} />
                 </li>
               ))}
             </ul>
@@ -51,14 +50,14 @@ const Home = () => {
       </div>
 
       <div className="home-creators">
-        <h3 className="h3-bold text-light-1">Top Creators</h3>
-        {isUserLoading && !creators ? (
+        <h3 className="h3-bold text-light-1">Top Artsits</h3>
+        {isUsersLoading && !users ? (
           <Loader />
         ) : (
           <ul className="grid 2xl:grid-cols-2 gap-6">
-            {creators?.documents.map((creator) => (
-              <li key={creator?.$id}>
-                <UserCard user={creator} />
+            {users?.map((user) => (
+              <li key={user?.id}>
+                <UserCard artist={user} />
               </li>
             ))}
           </ul>

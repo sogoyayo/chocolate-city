@@ -1,13 +1,17 @@
 import { Outlet, Navigate } from "react-router-dom";
 
-import { useUserContext } from "@/context/AuthContext";
+import { useCurrentUser } from "@/lib/react-query/queries";
 
 export default function AuthLayout() {
-  const { isAuthenticated } = useUserContext();
+  const { data: currentUser, isLoading } = useCurrentUser();
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <>
-      {isAuthenticated ? (
+      {currentUser ? (
         <Navigate to="/" />
       ) : (
         <>

@@ -1,7 +1,7 @@
 import * as z from "zod";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, useNavigate } from "react-router-dom";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -10,16 +10,13 @@ import Loader from "@/components/shared/Loader";
 import { useToast } from "@/components/ui/use-toast";
 
 import { SigninValidation } from "@/lib/validation";
-import { useSignInAccount } from "@/lib/react-query/queries";
-import { useUserContext } from "@/context/AuthContext";
+import { useLogin, useCurrentUser } from "@/lib/react-query/queries";
 
 const SigninForm = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { checkAuthUser, isLoading: isUserLoading } = useUserContext();
-
-  // Query
-  const { mutateAsync: signInAccount, isLoading } = useSignInAccount();
+  const { data: currentUser, isLoading: isUserLoading } = useCurrentUser();
+  const { mutateAsync: login, isLoading: isLoggingIn } = useLogin();
 
   const form = useForm<z.infer<typeof SigninValidation>>({
     resolver: zodResolver(SigninValidation),
@@ -30,32 +27,24 @@ const SigninForm = () => {
   });
 
   const handleSignin = async (user: z.infer<typeof SigninValidation>) => {
-    const session = await signInAccount(user);
+    try {
+      const session = await login(user);
 
-    if (!session) {
+      if (session) {
+        form.reset();
+        navigate("/");
+      } else {
+        toast({ title: "Login failed. Please try again." });
+      }
+    } catch (error) {
       toast({ title: "Login failed. Please try again." });
-      
-      return;
-    }
-
-    const isLoggedIn = await checkAuthUser();
-
-    if (isLoggedIn) {
-      form.reset();
-
-      navigate("/");
-    } else {
-      toast({ title: "Login failed. Please try again.", });
-      
-      return;
+      console.error('Error during login:', error);
     }
   };
 
   return (
     <Form {...form}>
       <div className="sm:w-420 flex-center flex-col">
-        <img src="/assets/images/logo.svg" alt="logo" />
-
         <h2 className="h3-bold md:h2-bold pt-5 sm:pt-12">
           Log in to your account
         </h2>
@@ -93,8 +82,8 @@ const SigninForm = () => {
             )}
           />
 
-          <Button type="submit" className="shad-button_primary">
-            {isLoading || isUserLoading ? (
+          <Button type="submit" className="shad-button_primary" disabled={isLoggingIn || isUserLoading}>
+            {isLoggingIn || isUserLoading ? (
               <div className="flex-center gap-2">
                 <Loader /> Loading...
               </div>

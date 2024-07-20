@@ -1,27 +1,27 @@
-import { Models } from "appwrite";
 import { Link } from "react-router-dom";
 
-import { PostStats } from "@/components/shared";
+// import { PostStats } from "@/components/shared";
 import { multiFormatDateString } from "@/lib/utils";
-import { useUserContext } from "@/context/AuthContext";
+import { Tweet } from "@/types";
+// import { useCurrentUser } from "@/lib/react-query/queries";
 
-type PostCardProps = {
-  post: Models.Document;
-};
 
-const PostCard = ({ post }: PostCardProps) => {
-  const { user } = useUserContext();
+interface PostCardProps {
+  tweet: Tweet;
+}
 
-  if (!post.creator) return;
+const PostCard = ({ tweet } : PostCardProps) => {
+  // const { data: user, isLoading } = useCurrentUser();
+
+  if (!tweet.name) return;
 
   return (
     <div className="post-card">
       <div className="flex-between">
         <div className="flex items-center gap-3">
-          <Link to={`/profile/${post.creator.$id}`}>
+          <Link to={``}>
             <img
               src={
-                post.creator?.imageUrl ||
                 "/assets/icons/profile-placeholder.svg"
               }
               alt="creator"
@@ -31,23 +31,20 @@ const PostCard = ({ post }: PostCardProps) => {
 
           <div className="flex flex-col">
             <p className="base-medium lg:body-bold text-light-1">
-              {post.creator.name}
+              {tweet.name}
             </p>
             <div className="flex-center gap-2 text-light-3">
               <p className="subtle-semibold lg:small-regular ">
-                {multiFormatDateString(post.$createdAt)}
+                {multiFormatDateString((new Date).toLocaleString())}
               </p>
               •
-              <p className="subtle-semibold lg:small-regular">
-                {post.location}
-              </p>
             </div>
           </div>
         </div>
 
         <Link
-          to={`/update-post/${post.$id}`}
-          className={`${user.id !== post.creator.$id && "hidden"}`}>
+          to={`/update-post/${tweet.id}`}
+        >
           <img
             src={"/assets/icons/edit.svg"}
             alt="edit"
@@ -57,26 +54,18 @@ const PostCard = ({ post }: PostCardProps) => {
         </Link>
       </div>
 
-      <Link to={`/posts/${post.$id}`}>
+      <Link to={``}>
+      {/* <Link to={`/posts/${tweet.id}`}> */}
         <div className="small-medium lg:base-medium py-5">
-          <p>{post.caption}</p>
-          <ul className="flex gap-1 mt-2">
-            {post.tags.map((tag: string, index: string) => (
-              <li key={`${tag}${index}`} className="text-light-3 small-regular">
-                #{tag}
-              </li>
-            ))}
-          </ul>
+          <p>{tweet.body}</p>
         </div>
 
         <img
-          src={post.imageUrl || "/assets/icons/profile-placeholder.svg"}
+          src={"/assets/icons/profile-placeholder.svg"}
           alt="post image"
           className="post-card_img"
         />
       </Link>
-
-      <PostStats post={post} userId={user.id} />
     </div>
   );
 };
